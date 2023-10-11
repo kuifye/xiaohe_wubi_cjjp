@@ -1,0 +1,147 @@
+# Rime schema
+# encoding: utf-8
+
+schema:
+  schema_id: xnhe_wubi_cjjp
+  name: 小鶴五筆音形_超級簡拼依賴項
+  version: "1.0" 
+  author:
+    - Rime schema by 梨子
+  description:
+    小鶴五筆超級簡拼。
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中文, 西文 ]
+  - name: full_shape
+    states: [ 半角, 全角 ]
+  - name: simplification
+    reset: 1
+    states: [ 漢字, 汉字 ]
+  - name: ascii_punct
+    reset: 0
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - echo_translator
+    - punct_translator
+    - script_translator                        #小鹤字词主翻译器
+  filters:
+    - simplifier
+    - simplifier@simplification
+    - uniquifier
+    - cjk_minifier
+    - reverse_lookup_filter@reverse_lookup_xnhe_wubi             #反查提示滤镜如无需要可关闭
+
+speller:
+  alphabet: "abcdefghijklmnopqrstuvwxyz;'"
+  initials: "qwertasdfgzxcvbyuiophjklnm;"
+  delimiter: " `"
+  algebra:
+    - erase/^xx$/
+    - derive/^([jqxy])u$/$1v/
+    - derive/^([aoe])([ioun])$/$1$1$2/
+    - xform/^([aoe])(ng)?$/$1$1$2/
+    - xform/iu$/Q/
+    - xform/(.)ei$/$1W/
+    - xform/uan$/R/
+    - xform/[uv]e$/T/
+    - xform/un$/Y/
+    - xform/^sh/U/
+    - xform/^ch/I/
+    - xform/^zh/V/
+    - xform/uo$/O/
+    - xform/ie$/P/
+    - xform/i?ong$/S/
+    - xform/ing$|uai$/K/
+    - xform/(.)ai$/$1D/
+    - xform/(.)en$/$1F/
+    - xform/(.)eng$/$1G/
+    - xform/[iu]ang$/L/
+    - xform/(.)ang$/$1H/
+    - xform/ian$/M/
+    - xform/(.)an$/$1J/
+    - xform/(.)ou$/$1Z/
+    - xform/[iu]a$/X/
+    - xform/iao$/N/
+    - xform/(.)ao$/$1C/
+    - xform/ui$/V/
+    - xform/in$/B/
+    - xlit/QWRTYUIOPSDFGHJKLZXCVBNM/qwrtyuiopsdfghjklzxcvbnm/
+    - xform/^a$/aa/
+    - xform/^e$/ee/
+    - xform/^o$/oo/
+    - xform/^fg$/fs/
+    - xform/^eh$/em/
+    - xform/^ei$/ew/
+    - xform/^oz$/ou/
+    - xform/^ao$/ac/
+    - xform/^ah$/am/
+    - xform/^aj$/an/
+    - xform/^ui$/us/
+    - xform/^u([yuohjkl])$/a$1/
+    - xform/^v([werasdfgzxcv])$/o$1/
+    - xform/^y([yuiohjkl])$/e$1/
+#超级简拼
+    - derive/^(.).+$/$1/
+
+key_binder:
+  import_preset: default
+  bindings:
+    - { when: has_menu, accept: ",", send: "'" }                                # 单字、超级简拼引导码
+    - { when: has_menu, accept: ".", send: "." }                                # 简码
+    - { when: has_menu, accept: apostrophe, send: 2 }                           # 第2候选键(')
+    # - { when: has_menu, accept: "/", send: 3 }                                # 第3候选键(/)
+    - { when: composing, accept: "-", send: Page_Up}                            #上翻页
+    - { when: composing, accept: equal, send: Page_Down}                        #下翻页
+    - { when: always, accept: "Control+j", toggle: simplification }             #切换简繁
+
+translator:                      #小鹤字词翻译器
+  dictionary: xnhe_wubi_cjjp
+  prism: xnhe_wubi_cjjp
+
+simplification:
+  #  opencc_config: s2t.json    # 简 -> 繁
+  #  opencc_config: s2hk.json   # 繁 -> 香港
+  opencc_config: t2s.json       # 繁 -> 简
+  #  opencc_config: t2tw.json   # 繁 -> 台湾
+  #  opencc_config: t2hk.json   # 繁 -> 香港
+  #  opencc_config: s2tw.json   # 簡 -> 臺灣標準
+  #  opencc_config: s2twp.json  # 簡 -> 臺灣片語
+  option_name: simplification
+
+punctuator:
+  import_preset: default        #設定符號表，這裏直接導入預設的
+
+recognizer:
+  patterns:
+    email: "^[a-z][-_.0-9a-z]*@.*$"
+    uppercase: "^[A-Z][-_+.'0-9A-Za-z]*$"
+    url: "^(www[.]|https?:|ftp:|mailto:).*$"
+    reverse_lookup: "^;[a-z]*$" #使用o激活反查，如有其他需要可以自行更改
+
+grammar:
+  language:
+    zh-hant-t-essay-bgw
+  collocation_max_length: 7
+  collocation_min_length: 7
+
+menu:
+  page_size: 4
